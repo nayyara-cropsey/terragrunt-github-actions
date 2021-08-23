@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 function stripColors {
   echo "${1}" | sed 's/\x1b\[[0-9;]*m//g'
@@ -97,8 +98,8 @@ function installTerraform {
   fi
 
   url="https://releases.hashicorp.com/terraform/${tfVersion}/terraform_${tfVersion}_linux_amd64.zip"
-
-  echo "Downloading Terraform v${tfVersion}"
+  
+  echo "Downloading Terraform v${tfVersion} (URL: ${url})"
   curl -s -S -L -o /tmp/terraform_${tfVersion} ${url}
   if [ "${?}" -ne 0 ]; then
     echo "Failed to download Terraform v${tfVersion}"
