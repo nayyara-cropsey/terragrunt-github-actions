@@ -1,5 +1,12 @@
 #!/bin/bash
 
+############
+# Do not set -e on this script. The terragrunt script modules leverage
+# various exit codes as a means to communicate state.
+# Please see: https://www.terraform.io/docs/cli/commands/plan.html#detailed-exitcode
+#
+############
+
 function stripColors {
   echo "${1}" | sed 's/\x1b\[[0-9;]*m//g'
 }
