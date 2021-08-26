@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 function stripColors {
   echo "${1}" | sed 's/\x1b\[[0-9;]*m//g'
@@ -98,7 +97,7 @@ function installTerraform {
   fi
 
   url="https://releases.hashicorp.com/terraform/${tfVersion}/terraform_${tfVersion}_linux_amd64.zip"
-  
+
   echo "Downloading Terraform v${tfVersion} (URL: ${url})"
   curl -s -S -L -o /tmp/terraform_${tfVersion} ${url}
   if [ "${?}" -ne 0 ]; then
@@ -140,7 +139,7 @@ function installTerragrunt {
 
   echo "Moving Terragrunt ${tgVersion} to PATH"
   chmod +x /tmp/terragrunt
-  mv /tmp/terragrunt /usr/local/bin/terragrunt 
+  mv /tmp/terragrunt /usr/local/bin/terragrunt
   if [ "${?}" -ne 0 ]; then
     echo "Failed to move Terragrunt ${tgVersion}"
     exit 1
@@ -150,9 +149,10 @@ function installTerragrunt {
 
 function main {
   # Source the other files to gain access to their functions
-  scriptDir=$(dirname ${0})  
+  echo "Loading terragrunt script modules"
+  scriptDir=$(dirname ${0})
   source ${scriptDir}/terragrunt_fmt.sh
-  source ${scriptDir}/terragrunt_hclfmt.sh  
+  source ${scriptDir}/terragrunt_hclfmt.sh
   source ${scriptDir}/terragrunt_init.sh
   source ${scriptDir}/terragrunt_validate.sh
   source ${scriptDir}/terragrunt_plan.sh
