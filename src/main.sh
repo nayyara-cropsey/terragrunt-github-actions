@@ -155,6 +155,10 @@ function installTerragrunt {
 }
 
 function main {
+  # In Docker, Github actions mounts the Git repository in a way that breaks Terragrunt detection of the Git root
+  # Mark the mounted workspace as safe so Terragrunt built-in functions can detect Git root without problems
+  git config --global --add safe.directory $GITHUB_WORKSPACE
+
   # Source the other files to gain access to their functions
   echo "Loading terragrunt script modules"
   scriptDir=$(dirname ${0})
