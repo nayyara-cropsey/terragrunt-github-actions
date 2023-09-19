@@ -51,6 +51,16 @@ function parseInputs {
     tfWorkingDir=${INPUT_TF_ACTIONS_WORKING_DIR}
   fi
 
+  tfArchitecture="amd64"
+  if [[ -n "${INPUT_TF_ACTIONS_ARCHITECTURE}" ]]; then
+    tfArchitecture=${INPUT_TF_ACTIONS_ARCHITECTURE}
+  fi
+
+  tgArchitecture="amd64"
+  if [[ -n "${INPUT_TG_ACTIONS_ARCHITECTURE}" ]]; then
+    tgArchitecture=${INPUT_TG_ACTIONS_ARCHITECTURE}
+  fi
+
   tfBinary="terragrunt"
   if [[ -n "${INPUT_TF_ACTIONS_BINARY}" ]]; then
     tfBinary=${INPUT_TF_ACTIONS_BINARY}
@@ -103,7 +113,7 @@ function installTerraform {
     fi
   fi
 
-  url="https://releases.hashicorp.com/terraform/${tfVersion}/terraform_${tfVersion}_linux_amd64.zip"
+  url="https://releases.hashicorp.com/terraform/${tfVersion}/terraform_${tfVersion}_linux_${tfArchitecture}.zip"
 
   echo "Downloading Terraform v${tfVersion} (URL: ${url})"
   curl -s -S -L -o /tmp/terraform_${tfVersion} ${url}
@@ -134,7 +144,7 @@ function installTerragrunt {
     fi
   fi
 
-  url="https://github.com/gruntwork-io/terragrunt/releases/download/${tgVersion}/terragrunt_linux_amd64"
+  url="https://github.com/gruntwork-io/terragrunt/releases/download/${tgVersion}/terragrunt_linux_${tgArchitecture}"
 
   echo "Downloading Terragrunt ${tgVersion}"
   curl -s -S -L -o /tmp/terragrunt ${url}
