@@ -1,5 +1,12 @@
 #!/bin/bash
 
+############
+# Do not set -e on this script. The terragrunt script modules leverage
+# various exit codes as a means to communicate state.
+# Please see: https://www.terraform.io/docs/cli/commands/plan.html#detailed-exitcode
+#
+############
+
 function stripColors {
   echo "${1}" | sed 's/\x1b\[[0-9;]*m//g'
 }
@@ -42,6 +49,16 @@ function parseInputs {
   tfWorkingDir="."
   if [[ -n "${INPUT_TF_ACTIONS_WORKING_DIR}" ]]; then
     tfWorkingDir=${INPUT_TF_ACTIONS_WORKING_DIR}
+  fi
+
+  tfArchitecture="amd64"
+  if [[ -n "${INPUT_TF_ACTIONS_ARCHITECTURE}" ]]; then
+    tfArchitecture=${INPUT_TF_ACTIONS_ARCHITECTURE}
+  fi
+
+  tgArchitecture="amd64"
+  if [[ -n "${INPUT_TG_ACTIONS_ARCHITECTURE}" ]]; then
+    tgArchitecture=${INPUT_TG_ACTIONS_ARCHITECTURE}
   fi
 
   tfBinary="terragrunt"
@@ -96,9 +113,9 @@ function installTerraform {
     fi
   fi
 
-  url="https://releases.hashicorp.com/terraform/${tfVersion}/terraform_${tfVersion}_linux_amd64.zip"
+  url="https://releases.hashicorp.com/terraform/${tfVersion}/terraform_${tfVersion}_linux_${tfArchitecture}.zip"
 
-  echo "Downloading Terraform v${tfVersion}"
+  echo "Downloading Terraform v${tfVersion} (URL: ${url})"
   curl -s -S -L -o /tmp/terraform_${tfVersion} ${url}
   if [ "${?}" -ne 0 ]; then
     echo "Failed to download Terraform v${tfVersion}"
@@ -127,7 +144,7 @@ function installTerragrunt {
     fi
   fi
 
-  url="https://github.com/gruntwork-io/terragrunt/releases/download/${tgVersion}/terragrunt_linux_amd64"
+  url="https://github.com/gruntwork-io/terragrunt/releases/download/${tgVersion}/terragrunt_linux_${tgArchitecture}"
 
   echo "Downloading Terragrunt ${tgVersion}"
   curl -s -S -L -o /tmp/terragrunt ${url}
@@ -139,7 +156,7 @@ function installTerragrunt {
 
   echo "Moving Terragrunt ${tgVersion} to PATH"
   chmod +x /tmp/terragrunt
-  mv /tmp/terragrunt /usr/local/bin/terragrunt 
+  mv /tmp/terragrunt /usr/local/bin/terragrunt
   if [ "${?}" -ne 0 ]; then
     echo "Failed to move Terragrunt ${tgVersion}"
     exit 1
@@ -148,10 +165,15 @@ function installTerragrunt {
 }
 
 function main {
+  # In Docker, Github actions mounts the Git repository in a way that breaks Terragrunt detection of the Git root
+  # Mark the mounted workspace as safe so Terragrunt built-in functions can detect Git root without problems
+  git config --global --add safe.directory $GITHUB_WORKSPACE
+
   # Source the other files to gain access to their functions
-  scriptDir=$(dirname ${0})  
+  echo "Loading terragrunt script modules"
+  scriptDir=$(dirname ${0})
   source ${scriptDir}/terragrunt_fmt.sh
-  source ${scriptDir}/terragrunt_hclfmt.sh  
+  source ${scriptDir}/terragrunt_hclfmt.sh
   source ${scriptDir}/terragrunt_init.sh
   source ${scriptDir}/terragrunt_validate.sh
   source ${scriptDir}/terragrunt_plan.sh
